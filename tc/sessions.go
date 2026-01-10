@@ -1,78 +1,46 @@
 package tc
 
-import(
+import (
 	"sync"
-	"crypto/rand"
-	"encoding/hex"
-	"time"
 )
 
-type Session struct {
-	Mutex    sync.Mutex
-	Username string
-	LastSeen time.Time
-	Data     map[string]any
-}
-
 type SessionManager struct {
-	Mutex    sync.RWMutex
-	Sessions map[string]*Session
+	Mu    sync.RWMutex
+	Store map[int]any
 }
 
 func NewSessionManager() *SessionManager {
 	return &SessionManager{
-		Sessions: make(map[string]*Session),
+		Store: make(map[int]any),
 	}
 }
 
-// Check if session exists
-func (sm *SessionManager) CheckSessionUsername(username string) bool {
-	sm.Mutex.RLock()
-	defer sm.Mutex.RUnlock()
+func (sm *SessionManager) Add(id int, object any) {
+	sm.Mu.Lock()
+	defer sm.Mu.Unlock()
+	sm.Store[id] = object
+ 
+}
 
-	for _, session := range sm.Sessions {
-		if session.Username == username {
-			return true
+func (sm *SessionManager) Remove(id int) {
+	sm.Mu.Lock()
+	defer sm.Mu.Unlock()
+
+	delete(sm.Store, id)
+
+}
+
+func (sm *SessionManager) GetUnused() int {
+	sm.Mu.RLock()
+	defer sm.Mu.RUnlock()
+
+	max := 0
+	for id := range sm.Store {
+		if id > max {
+			max = id
 		}
 	}
-	return false
+
+	return max + 1
 }
 
-
-// Add a session
-func (sm *SessionManager) AddSession(id string, username string) {
-	sm.Mutex.Lock()
-	defer sm.Mutex.Unlock()
-
-	sm.Sessions[id] = &Session{
-		Username: username,
-		LastSeen: time.Now(),
-		Data:     make(map[string]any),
-	}
-}
-
-// get a session
-func (sm *SessionManager) GetSession(id string) (*Session, bool) {
-	sm.Mutex.RLock()
-	defer sm.Mutex.RUnlock()
-
-	s, ok := sm.Sessions[id]
-	return s, ok
-}
-
-// loop and check for an empty session
-func (sm *SessionManager) GetUniqueID() string {
-	for {
-		id := make([]byte, 16) // 128-bit ID
-		_, _ = rand.Read(id)
-		uid := hex.EncodeToString(id)
-
-		sm.Mutex.RLock()
-		_, exists := sm.Sessions[uid]
-		sm.Mutex.RUnlock()
-
-		if !exists {
-			return uid
-		}
-	}
-}

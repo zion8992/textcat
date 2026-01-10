@@ -1,17 +1,23 @@
 package main
 
 import (
+	/* std */
 	"log/slog"
-	"github.com/zion8992/textcat/tc"
 	"encoding/json"
 	"fmt"
-
+	
+	/* database */
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
+
+	/* stuff */
 	"errors"
 	"bytes"
 	"encoding/gob"
 	"reflect"
+
+	/* textcat */
+	"github.com/zion8992/textcat/tc"
 )
 
 type Application struct {
@@ -146,18 +152,18 @@ func (app *Application) LogMsg(level string, message string, args ...any) {
 }
 
 
-func (app *Application) HandleReq(msg []byte) error {
+func (app *Application) HandleReq(msg []byte, conn any) error {
     var data tc.Recieve
 
     if err := json.Unmarshal(msg, &data); err != nil {
-        return err
+        return tc.MakeError("error", err)
     }
 
     fmt.Println(data)
 	switch data.Req {
 		case "register":
 			if data.Username == "" || data.Token == "" {
-				return errors.New("empty username or password")
+				return errors.New("error: empty username or password")
 			}
 			err := app.Textcat.CreateUser(data.Username, data.Token)
 			if err != nil {
@@ -165,9 +171,9 @@ func (app *Application) HandleReq(msg []byte) error {
 			}
 		case "login":
 			if data.Username == "" || data.Token == "" {
-				return errors.New("empty username or password")
+				return errors.New("error: empty username or password")
 			}
-			err := app.Textcat.LoginUser(data.Username, data.Token)
+			err := app.Textcat.LoginUser(data.Username, data.Token, conn)
 			if err != nil {
 				return err
 			}
@@ -175,4 +181,14 @@ func (app *Application) HandleReq(msg []byte) error {
 
 	
     return nil
+}
+
+func (app *Application) GetMaxCachedMessages() uint16 {
+	// TODO: add this feature
+	return 10
+}
+
+func (app *Application) GetMaxUserSessions() uint8 {
+	// TODO: add a config
+	return 32
 }

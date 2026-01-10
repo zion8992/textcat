@@ -17,6 +17,10 @@ var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool { return true }, // Allow all connections
 }
 
+const Version = "3.0.0-beta5"
+const server_name = "textcat server"
+const server_desc = "textcat server description"
+
 /*
 Middleware handles checking user sessions, preventing spam, etc...
 Middlware is implemented in ws()
@@ -29,9 +33,14 @@ func ws(app *Application) http.HandlerFunc {
         conn, err := upgrader.Upgrade(w, r, nil)
         if err != nil {
             app.Log.Error("upgrade failed", slog.Any("error", err))
+			w.Write([]byte(`Please use a textcat websocket client`))
             return
         }
         defer conn.Close()
+
+		MakeRequest("server_data", "server_name", server_name, "", conn)
+		MakeRequest("server_data", "server_desc", server_desc, "", conn)
+		MakeRequest("server_data", "server_version", Version, "", conn)
 
         for {
             _, msg, err := conn.ReadMessage()
@@ -39,15 +48,19 @@ func ws(app *Application) http.HandlerFunc {
                 break
             }
 
-            if err := app.HandleReq(msg); err != nil {
+			// if the process returns "error <message>", then process failed with a user error
+			// "ok <message>" if the process went ok
+			// "server_error" for any other error
+
+            if err := app.HandleReq(msg, conn); err != nil {
                 if strings.HasPrefix(err.Error(), "error") {
-                    MakeRequest("status", err.Error(), "error", conn)
+                    MakeRequest("status", "", err.Error(), "error", conn)
                     app.Log.Error("request returned", slog.Any("error", err))
                 } else if strings.HasPrefix(err.Error(), "ok") {
-                    MakeRequest("status", err.Error(), "ok", conn)
-                    app.Log.Error("request ok", slog.Any("error", err))
+                    MakeRequest("status", "", err.Error(), "ok", conn)
+                    app.Log.Error("request ok", slog.Any("status", err))
                 } else {
-                    MakeRequest("status", err.Error(), "server_error", conn)
+                    MakeRequest("status", "", err.Error(), "server_error", conn)
                     app.Log.Error("internal server error", slog.Any("error", err))
                 }
             }
@@ -90,7 +103,23 @@ Function run(*Application) runs a textcat server
 func slashHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("This server is running textcat :)"))
+
+	// This handles /* except for /textcat, were the websocket server is running
+	// <title> is to sets the webpage title, 
+	// <body> sets the font family and the text align
+	// the links (<a>) open in a new tab using target="_blank"
+	
+	// HTML is validated by validator.w3.org on Jan 2 2025
+
+	version_var := "This server is running textcat version " + Version
+
+	w.Write([]byte(`<!DOCTYPE html>`))
+	w.Write([]byte(`<html lang="en">`))
+	w.Write([]byte(`<title>Textcat</title>`))
+	w.Write([]byte(`<body style="font-family:'Arial', serif; text-align: center;">`))
+	w.Write([]byte(version_var))
+	w.Write([]byte(`<br> <h4>Links</h4> <a href="https://github.com/zion8992/textcat" target="_blank">Source Code</a> <br> <a href="https://zion8992.github.io" target="_blank">Website</a> :)`))
+	w.Write([]byte(`</html>`))
 }
 
 
@@ -98,6 +127,7 @@ func run(app *Application) {
 	defer app.Database.Close() // close the database connection
 
 	var port string = ":8080"
+
 
 	// Wrap ws(app) with a panic recovery
 	handler := http.HandlerFunc(ws(app))
@@ -151,5 +181,8 @@ github.com/golang/go/issues/6842
 func main() {
 	var app *Application
 	app = createApp()
+
+
+
 	run(app)
 }

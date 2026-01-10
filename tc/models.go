@@ -24,6 +24,7 @@ type Send struct {
 	/*
 		status: status of client's previous request
 	*/
+	Key string
 	Value string
 	Status string
 	/*
@@ -43,7 +44,7 @@ type User struct {
 
 // bridge between the cmd/ and the tc/
 type LogicBridge interface {
-	HandleReq(msg []byte) error
+	HandleReq(msg []byte, conn any) error // conn is needed for session manager
 	LogMsg(level string, message string, args ...any)
 
 	/* Data */
@@ -54,4 +55,8 @@ type LogicBridge interface {
 
 	/* User */
 	UserExists(table string, username string) (bool, error)
+
+	/* Get Data */
+	GetMaxCachedMessages() uint16 // from 0 to 65,535, should be enough
+	GetMaxUserSessions() uint8 // up to 255 sessions is enough
 }

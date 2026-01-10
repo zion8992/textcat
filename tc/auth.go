@@ -10,6 +10,11 @@ type Textcat struct {
 	Sessions *SessionManager
 }
 
+type Session struct {
+	Username string
+	Connection any
+}
+
 var ErrNotFound = errors.New("data does not found")
 
 func (tc *Textcat) CreateUser(username string, password string) error {
@@ -53,7 +58,7 @@ func (tc *Textcat) CreateUser(username string, password string) error {
 	return errors.New("ok")
 }
 
-func (tc *Textcat) LoginUser(username string, password string) error {
+func (tc *Textcat) LoginUser(username string, password string, connection any) error {
 	tc.Function.LogMsg("info", "user login", username, password)
 
 	// Validate username
@@ -86,11 +91,12 @@ func (tc *Textcat) LoginUser(username string, password string) error {
 		return MakeError("server_error:", "failed to update last login:", err)
 	}
 
-	if tc.Sessions.CheckSessionUsername(username) {
-		return errors.New("error: a session already exists for this user")
+	UserSession := Session{
+		Username: username,
+		Connection: nil,
 	}
 
-	tc.Sessions.AddSession(tc.Sessions.GetUniqueID(), username)
+	tc.Sessions.Add(tc.Sessions.GetUnused(), UserSession)
 
 
 	return errors.New("ok")

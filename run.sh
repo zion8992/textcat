@@ -1,1 +1,1 @@
-go run ./cmd
+go run ./cmd/

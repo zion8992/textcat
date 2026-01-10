@@ -7,9 +7,10 @@ import (
 	"github.com/zion8992/textcat/tc"
 )
 
-func MakeRequest(Req string, Value string, Status string, Conn *websocket.Conn) error {
+func MakeRequest(Req string, Key string, Value string, Status string, Conn *websocket.Conn) error {
 	response := tc.Send{
         Req: Req,
+		Key: Key,
 		Value: Value,
 		Status: Status,
 	}
