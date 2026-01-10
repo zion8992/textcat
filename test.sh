@@ -1,3 +1,3 @@
 #go vet
-staticcheck -f stylish cmd/main.go
+staticcheck -f stylish cmd/*
 go test

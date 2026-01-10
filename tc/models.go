@@ -46,6 +46,7 @@ type User struct {
 type LogicBridge interface {
 	HandleReq(msg []byte, conn any) error // conn is needed for session manager
 	LogMsg(level string, message string, args ...any)
+	MakeRequest(Req string, Key string, Value string, Status string, conn any) error
 
 	/* Data */
 	StoreData(table string, record any) error

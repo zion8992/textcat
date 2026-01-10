@@ -136,6 +136,21 @@ func (app *Application) CreateTable(name string) error {
 	return nil
 }
 
+func (app *Application) MakeRequest(Req string, Key string, Value string, Status string, conn any) error {
+	response := tc.Send{
+        Req: Req,
+		Key: Key,
+		Value: Value,
+		Status: Status,
+	}
+    returnMe, err := json.Marshal(response)
+	if err != nil {
+		return err
+	}
+
+	return Conn.WriteMessage(websocket.TextMessage, returnMe)
+
+}
 
 
 func (app *Application) LogMsg(level string, message string, args ...any) {
