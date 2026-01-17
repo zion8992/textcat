@@ -29,7 +29,7 @@ jobs:
           mkdir -p dist
           EXT=""
           if [ "${{ matrix.goos }}" = "windows" ]; then EXT=".exe"; fi
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=1 \
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
             go build -o dist/textcat_${{ matrix.goos }}_${{ matrix.goarch }}${EXT} ./cmd
 
       - name: Upload to release

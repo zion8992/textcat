@@ -82,9 +82,9 @@ func createApp() *Application {
     //defer db.Close() -> happens in run()
 
 	// Define flags
-	serverName := flag.String("serverName", "Textcat", "Name of the server")
-	serverDesc := flag.String("serverDesc", "Just a textcat chat server", "Description of the server")
-	maxCached := flag.Uint("maxMessages", 100, "Max cached messages")
+	serverName := flag.String("serverName", "textcat server", "Name of the server")
+	serverDesc := flag.String("serverDesc", "textcat server", "Description of the server")
+	maxCached := flag.Uint("maxMessages", 5000, "Max cached messages")
 	maxSessions := flag.Uint("maxSessions", 10, "Max user sessions")
 
 	// Parse flags from command line
