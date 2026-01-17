@@ -3,6 +3,8 @@ package tc
 import(
 	"sync"
 	"fmt"
+	"strings"
+	"errors"
 )
 
 type ChannelManager struct {
@@ -50,6 +52,11 @@ func (c *Channel) SendMessage(username string, message string) error {
 	sanitized, err := ValidateMessage(message, 120)
 	if err != nil {
 		return err
+	}
+
+	if strings.HasPrefix(message, "/") {
+		fmt.Println(message)
+		return errors.New("ok")
 	}
 
 	for _, value := range c.Connected {
