@@ -21,10 +21,18 @@ import (
 	"github.com/zion8992/textcat/tc"
 )
 
+type AppConfig struct {
+	ServerName string
+	ServerDesc string
+	MaxCachedMessages uint16
+	MaxUserSessions uint8
+}
+
 type Application struct {
 	Log *slog.Logger
 	Database *sql.DB
 	Textcat *tc.Textcat // session manager, auth manager, channel manager
+	Config *AppConfig
 }
 
 func (app *Application) StoreData(table string, record any) error {
@@ -200,11 +208,9 @@ func (app *Application) HandleReq(msg []byte, conn tc.RequestWriter) error {
 }
 
 func (app *Application) GetMaxCachedMessages() uint16 {
-	// TODO: add this feature
-	return 10
+	return app.Config.MaxCachedMessages
 }
 
 func (app *Application) GetMaxUserSessions() uint8 {
-	// TODO: add a config
-	return 32
+	return app.Config.MaxUserSessions
 }
