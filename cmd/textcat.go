@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"reflect"
+	"github.com/gorilla/websocket" 
 
 	/* textcat */
 	"github.com/zion8992/textcat/tc"
@@ -136,7 +137,7 @@ func (app *Application) CreateTable(name string) error {
 	return nil
 }
 
-func (app *Application) MakeRequest(Req string, Key string, Value string, Status string, conn any) error {
+func (app *Application) MakeRequest(Req string, Key string, Value string, Status string, Conn tc.RequestWriter) error {
 	response := tc.Send{
         Req: Req,
 		Key: Key,
@@ -167,7 +168,7 @@ func (app *Application) LogMsg(level string, message string, args ...any) {
 }
 
 
-func (app *Application) HandleReq(msg []byte, conn any) error {
+func (app *Application) HandleReq(msg []byte, conn tc.RequestWriter) error {
     var data tc.Recieve
 
     if err := json.Unmarshal(msg, &data); err != nil {

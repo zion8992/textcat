@@ -44,9 +44,9 @@ type User struct {
 
 // bridge between the cmd/ and the tc/
 type LogicBridge interface {
-	HandleReq(msg []byte, conn any) error // conn is needed for session manager
+	HandleReq(msg []byte, conn RequestWriter) error // conn is needed for session manager
 	LogMsg(level string, message string, args ...any)
-	MakeRequest(Req string, Key string, Value string, Status string, conn any) error
+	MakeRequest(Req string, Key string, Value string, Status string, conn RequestWriter) error
 
 	/* Data */
 	StoreData(table string, record any) error
@@ -60,4 +60,8 @@ type LogicBridge interface {
 	/* Get Data */
 	GetMaxCachedMessages() uint16 // from 0 to 65,535, should be enough
 	GetMaxUserSessions() uint8 // up to 255 sessions is enough
+}
+
+type RequestWriter interface {
+	WriteMessage(messageType int, data []byte) error
 }

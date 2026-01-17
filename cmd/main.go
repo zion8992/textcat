@@ -17,7 +17,7 @@ var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool { return true }, // Allow all connections
 }
 
-const Version = "3.0.0-beta6"
+const Version = "3.0.0-beta7"
 const server_name = "textcat server"
 const server_desc = "textcat server description"
 

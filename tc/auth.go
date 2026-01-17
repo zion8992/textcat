@@ -3,6 +3,7 @@ package tc
 import (
 	"time"
 	"errors"
+	"strconv"
 )
 
 type Textcat struct {
@@ -58,7 +59,7 @@ func (tc *Textcat) CreateUser(username string, password string) error {
 	return errors.New("ok")
 }
 
-func (tc *Textcat) LoginUser(username string, password string, connection any) error {
+func (tc *Textcat) LoginUser(username string, password string, connection RequestWriter) error {
 	tc.Function.LogMsg("info", "user login", username, password)
 
 	// Validate username
@@ -96,8 +97,10 @@ func (tc *Textcat) LoginUser(username string, password string, connection any) e
 		Connection: nil,
 	}
 
-	tc.Sessions.Add(tc.Sessions.GetUnused(), UserSession)
+	userToken := tc.Sessions.GetUnused()
 
+	tc.Sessions.Add(userToken, UserSession)
 
+	tc.Function.MakeRequest("status", "YourToken", strconv.Itoa(userToken), "ok", connection)
 	return errors.New("ok")
 }

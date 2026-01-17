@@ -2,6 +2,7 @@ package tc
 
 import(
 	"sync"
+	"fmt"
 )
 
 type ChannelManager struct {
@@ -52,7 +53,8 @@ func (c *Channel) SendMessage(username string, message string) error {
 	}
 
 	for _, value := range c.Connected {
-		
+		fmt.Println(sanitized)
+		fmt.Println(value)
 	}
 
 	return nil
