@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"flag"
 
 	"log/slog" // logging
 	"os" // logging
@@ -17,9 +18,7 @@ var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool { return true }, // Allow all connections
 }
 
-const Version = "3.0.0-beta7"
-const server_name = "textcat server"
-const server_desc = "textcat server description"
+const Version = "3.0.0-beta8"
 
 /*
 Middleware handles checking user sessions, preventing spam, etc...
@@ -38,8 +37,8 @@ func ws(app *Application) http.HandlerFunc {
         }
         defer conn.Close()
 
-		MakeRequest("server_data", "server_name", server_name, "", conn)
-		MakeRequest("server_data", "server_desc", server_desc, "", conn)
+		MakeRequest("server_data", "server_name", app.Config.ServerName, "", conn)
+		MakeRequest("server_data", "server_desc", app.Config.ServerDesc, "", conn)
 		MakeRequest("server_data", "server_version", Version, "", conn)
 
         for {
@@ -82,11 +81,29 @@ func createApp() *Application {
     }
     //defer db.Close() -> happens in run()
 
+	// Define flags
+	serverName := flag.String("serverName", "Textcat", "Name of the server")
+	serverDesc := flag.String("serverDesc", "Just a textcat chat server", "Description of the server")
+	maxCached := flag.Uint("maxMessages", 100, "Max cached messages")
+	maxSessions := flag.Uint("maxSessions", 10, "Max user sessions")
+
+	// Parse flags from command line
+	flag.Parse()
+
+	// Populate the config struct from the flags
+	cfg := &AppConfig{
+		ServerName:        *serverName,
+		ServerDesc:        *serverDesc,
+		MaxCachedMessages: uint16(*maxCached),
+		MaxUserSessions:   uint8(*maxSessions),
+	}
+
     
     
     app := &Application {
 		Log: slog.New(slog.NewTextHandler(os.Stderr, nil)),
         Database: db,
+		Config: cfg,
 	}
 
     app.Textcat = &tc.Textcat{
@@ -181,8 +198,6 @@ github.com/golang/go/issues/6842
 func main() {
 	var app *Application
 	app = createApp()
-
-
 
 	run(app)
 }
