@@ -9,3 +9,14 @@ Building from source:
 
 1. install go `1.25`
 2. build for your system with: `go build -o textcat cmd/main.go`
+
+## Configuring
+`-serverName`: set server name (default: "textcat server")
+`-serverDesc`: set server description (default: "textcat server")
+`-maxSessions`: set server maximum sessions (default: 10)
+`-maxMessages`: set maximum messages to cache (default: 5000)
+
+example usage
+```
+./textcat -serverName "my name" -serverDesc "cool description" -maxSessions 10 -maxMessages 10000
+```
